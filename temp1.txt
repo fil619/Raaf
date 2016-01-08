@@ -1,0 +1,11 @@
+INSERT INTO `buses`(`source`, `destination`, `busnumber`, `time`, `company`) VALUES ('Margao','Colva','GA-01-CT-0116','09:20','Golden Bus lines');
+INSERT INTO `buses`(`source`, `destination`, `busnumber`, `time`, `company`) VALUES ('Margao','Colva','GA-01-CT-0118','10:15','Golden Bus lines');
+INSERT INTO `buses`(`source`, `destination`, `busnumber`, `time`, `company`) VALUES ('Margao','Colva','GA-01-CT-0120','10:55','Golden Bus lines');
+INSERT INTO `buses`(`source`, `destination`, `busnumber`, `time`, `company`) VALUES ('Margao','Colva','GA-01-CT-0111','11:30','Golden Bus lines');
+INSERT INTO `buses`(`source`, `destination`, `busnumber`, `time`, `company`) VALUES ('Margao','Colva','GA-01-CT-0113','12:10','Golden Bus lines');
+INSERT INTO `buses`(`source`, `destination`, `busnumber`, `time`, `company`) VALUES ('Margao','Colva','GA-01-CT-0114','13:55','Golden Bus lines');
+INSERT INTO `buses`(`source`, `destination`, `busnumber`, `time`, `company`) VALUES ('Margao','Colva','GA-01-CT-0117','14:20','Golden Bus lines');
+INSERT INTO `buses`(`source`, `destination`, `busnumber`, `time`, `company`) VALUES ('Margao','Colva','GA-01-CT-0119','15:00','Golden Bus lines');
+INSERT INTO `buses`(`source`, `destination`, `busnumber`, `time`, `company`) VALUES ('Margao','Colva','GA-01-CT-0110','16:45','Golden Bus lines');
+INSERT INTO `buses`(`source`, `destination`, `busnumber`, `time`, `company`) VALUES ('Margao','Colva','GA-01-CT-0112','17:10','Golden Bus lines');
+INSERT INTO `buses`(`source`, `destination`, `busnumber`, `time`, `company`) VALUES ('Margao','Colva','GA-01-CT-0114','17:45','Golden Bus lines');

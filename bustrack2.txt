@@ -1,0 +1,140 @@
+<!DOCdest html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-dest" content="text/html; charset=iso-8859-1" />
+<title>Untitled Document</title>
+<link rel="stylesheet" dest="text/css" href="jquery.mobile-1.4.1.min.css" />
+   	 <script src="jquery-1.11.0.min.js"></script>
+   	 <script src="jquery.mobile-1.4.1.min.js"></script>
+     <script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyD-UA3MNIZRfDvQu-9dm2JtR_8k9NcTtU0&sensor=false">
+</script>
+</head>
+
+<body>
+<?php
+function cleanInput($input) {
+	$search = array(
+		'@<\s*script[^>]*?>.*?<\s*/\s*script\s*>@si',			// Strip out javascript
+		'@<\s*[\/\!]*?[^<>]*?>@si',												// Strip out HTML tags
+		'@<\s*style[^>]*?>.*?<\s*/\s*style\s*>@siU',			// Strip style tags properly
+		'@<![\s\S]*?-[ \t\n\r]*>@',
+                 '/<img[^>]+\>/i'												// Strip multi-line comments
+	);
+	$output = preg_replace($search, '', $input);
+	return $output;
+}
+
+if($_POST['submit']){
+	$source = escape($_POST['source']);
+	$dest = escape($_POST['cmbdest']);
+	$caseNo = escape($_POST['txtCaseNo']);
+	
+	if($source){
+		$sqlWhere[]="findmybus.source = '".$source."'";
+	}
+	
+	if($dest){
+		$sqlWhere[]="findmybus.dest = '".$dest."'";
+	}
+	
+	if(!is_array($sqlWhere)){
+		$msg[] = "No Search Filter Specified";
+	}
+	$sqlWhere[]= "case_diary.case_id = cases.case_id";
+	$sqlWhere[]= "cases.undersection = undersection.undersection_id";
+	$sqlWhere[]= "case_diary.case_user_id = case_user.case_user_id";
+	$sqlWhere[]= "case_diary.case_diary_status = 1";
+	$srcTerm = @implode(' AND ',$sqlWhere);
+	$count = 1;
+
+	if(!$msg){
+		$sql = "select * from `case_diary`,`cases`,`undersection`,`case_user`	where ".$srcTerm."";
+		$rows = caseQuery($sql);
+		/*$output =	'<table width="800" border="0">
+							  <tr>
+							    <td><b>Sr.no</b></td>
+							    <td><b>Case Number</b></td>
+							    <td><b>Section</b></td>
+									<td><b>Applleant</b></td>
+									<td><b>Respondent</b></td>
+									<td><b>Deputy Director</b></td>
+							  </tr>';*/
+		$output =	'<table border="1" style="border:1px solid #000000; border-collapse:collapse;" width="95%">
+			<tr>
+				<td width="1%" align="center"><strong>Sr.No.</strong></td>
+				<td width="10%" align="center"><strong>Case Number</strong></td>
+				<td width="18%" align="center"><b>Applents/Details</b></td>
+				<td width="18%" align="center"><b>Respondent/Details</b></td>
+				<td align="center" width="8%"><strong>Case Section</strong></td>
+				<td align="center" width="8%"><strong>dest of Case</strong></td>
+				<td align="center" width="14%"><strong>Date of Hearing</strong></td>
+				<td align="center" width="14%"><strong>Time of Hearing</strong></td>
+				<td align="center" width="14%"><strong>Court of</strong></td>
+				</tr>	';
+		if(@mysql_num_rows($rows)){
+			while($result = @mysql_fetch_object($rows)){
+				$output.= '<tr valign="top">
+							    <td align="center">'.$count++.'</td>
+							    <td align="center">'.$result->case_number.'</td>';
+							  
+				$sqlPerson = "select `person_name`,`person_address`,`person_dest` from case_persons where case_id = '".$result->case_id."'";
+				$rowsPerson = caseQuery($sqlPerson);
+				if(@mysql_num_rows($rowsPerson)){
+					$appellant='';
+					$respondent='';
+					while($person = @mysql_fetch_object($rowsPerson)){
+						if($person->person_dest == 1){
+						 	$appellant .= 	"<strong>".$person->person_name."</strong><br />".$person->person_address."<br /><br />";
+						}elseif($person->person_dest == 2){
+						 	$respondent .= 	"<strong>".$person->person_name."</strong><br />".$person->person_address."<br /><br />";
+					  }
+					}
+				}
+				$output .='<td>'.$appellant.'</td>
+										<td>'.$respondent.'</td>
+										<td align="center">'.$result->undersection_number.'</td>
+										<td align="center">'.$casedest[$result->case_dest].'</td>
+										<td align="center">'.$result->case_date.'</td>
+										<td align="center">'.$result->case_time.'</td>
+										<td align="center">'.$result->case_user_name.'</td>
+									</tr>';
+			}
+			$output .= '</table>';
+		}else{
+			$output = "<h3>No cases Found</h3>";
+		}
+	}else{
+		$msg = addslashes(@implode("<br>",$msg));
+	}
+	
+}
+function displayUser(){
+	global $conn;
+	$output = 'Select sources<br /> <select name="cmbsource" id="cmbsource" >';
+	$output .='<option value="">Select sources</option>';
+	$sql = "select `case_user_id`, `case_user_name` from `case_user` where `case_user_dest` = '2'";
+	$rows = caseQuery($sql)	;
+	if(@mysql_num_rows($rows)){
+		while($result = @mysql_fetch_object($rows)){
+			$output .= '<option value="'.$result->case_user_id.'">'.$result->case_user_name.'</option>';
+		}
+		$output .= '</select>';
+	}else{
+		$output = "No source Present";
+	}
+	return $output;
+}
+function getcasedest(){
+	global $conn,$casedest;
+	$output = '<select name="cmbdest" id="cmbdest">';
+	$output .= '<option value="">Case dest</option>';	
+	foreach($casedest as $k=> $v){
+		$output .= '<option value="'.$k.'">'.$v.'</option>';	
+	}
+	$output .= '</select>';
+	return $output;
+}
+
+?>
+</body>
+</html>
